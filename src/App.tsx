@@ -1,45 +1,48 @@
 import React, {useState} from 'react';
 import './App.css';
-import {TaskType, Todolist} from './Todolist';
+import {Todolist} from './Todolist';
+import {v1} from "uuid";
 
-export type filterType = 'all' | 'active' | 'completed'
+export type FilterValuesType = "all" | "active" | "completed";
 
 function App() {
 
-    const tasks1 = [
-        {id: 1, title: "HTML&CSS", isDone: true},
-        {id: 2, title: "JS", isDone: true},
-        {id: 3, title: "TS", isDone: true},
-        {id: 4, title: "ReactJS", isDone: false}
-    ]
+    let [tasks, setTasks] = useState([
+        { id: v1(), title: "HTML&CSS", isDone: true },
+        { id: v1(), title: "JS", isDone: true },
+        { id: v1(), title: "ReactJS", isDone: false },
+        { id: v1(), title: "Rest API", isDone: false },
+        { id: v1(), title: "GraphQL", isDone: false },
+    ]);
+    let [filter, setFilter] = useState<FilterValuesType>("all");
 
-    let [tasks, setTasks] = useState<Array<TaskType>>(tasks1);
-    // let [filter, setFilter] = useState<filterType>("all");
+    function removeTask(id: string) {
+        let filteredTasks = tasks.filter(t => t.id != id);
+        setTasks(filteredTasks);
+    }
+    const addTask = (data: string) => {
+        setTasks([{id: v1(), title: data, isDone: false}, ...tasks])
 
-    const removeTask = (id: number) => {
-        setTasks(tasks.filter(el => el.id !== id))
+    }
+    function changeFilter(value: FilterValuesType) {
+        setFilter(value);
     }
 
-    // const filtered = (fil: filterType) => {
-    //     setFilter(fil);
-    // }
-    //
-    // let tasksToWatch: Array<TaskType> = tasks;
-    //
-    // if (filter === "all") {
-    //     tasksToWatch = tasks;
-    // } else if (filter === "active") {
-    //     tasksToWatch = tasks.filter(el => !el.isDone)
-    // } else if (filter === "completed") {
-    //     tasksToWatch = tasks.filter(el => el.isDone)
-    // }
+    let tasksForTodolist = tasks;
+    if (filter === "active") {
+        tasksForTodolist = tasks.filter(t => t.isDone === false);
+    }
+    if (filter === "completed") {
+        tasksForTodolist = tasks.filter(t => t.isDone === true);
+    }
 
     return (
         <div className="App">
-            <Todolist
-                title="What to learn"
-                tasks={tasks}
-                callback={removeTask}
+            <Todolist title="What to learn"
+                      tasks={tasksForTodolist}
+                      removeTask={removeTask}
+                      changeFilter={changeFilter}
+                      callbackAddTask={addTask}
             />
         </div>
     );
