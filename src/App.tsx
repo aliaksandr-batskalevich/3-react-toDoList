@@ -8,11 +8,11 @@ export type FilterValuesType = "all" | "active" | "completed";
 function App() {
 
     let [tasks, setTasks] = useState([
-        { id: v1(), title: "HTML&CSS", isDone: true },
-        { id: v1(), title: "JS", isDone: true },
-        { id: v1(), title: "ReactJS", isDone: false },
-        { id: v1(), title: "Rest API", isDone: false },
-        { id: v1(), title: "GraphQL", isDone: false },
+        {id: v1(), title: "HTML&CSS", isDone: true},
+        {id: v1(), title: "JS", isDone: true},
+        {id: v1(), title: "ReactJS", isDone: false},
+        {id: v1(), title: "Rest API", isDone: false},
+        {id: v1(), title: "GraphQL", isDone: false},
     ]);
     let [filter, setFilter] = useState<FilterValuesType>("all");
 
@@ -22,8 +22,17 @@ function App() {
     }
     const addTask = (data: string) => {
         setTasks([{id: v1(), title: data, isDone: false}, ...tasks])
-
     }
+    const setCheckbox = (idIn: string) => {
+        let tasksAfter = tasks.map(el => {
+            if (el.id === idIn) {
+                return {id: el.id, title: el.title, isDone: !el.isDone}
+            }
+            return el
+        });
+        setTasks(tasksAfter);
+    }
+
     function changeFilter(value: FilterValuesType) {
         setFilter(value);
     }
@@ -43,6 +52,7 @@ function App() {
                       removeTask={removeTask}
                       changeFilter={changeFilter}
                       callbackAddTask={addTask}
+                      callbackSetCheckbox={setCheckbox}
             />
         </div>
     );
