@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
-import './App.css';
+import './App.css'
 import {Todolist} from './Todolist';
-import {v1} from "uuid";
+import {v1} from 'uuid';
 
 export type FilterValuesType = "all" | "active" | "completed";
 
@@ -14,36 +14,37 @@ function App() {
         {id: v1(), title: "Rest API", isDone: false},
         {id: v1(), title: "GraphQL", isDone: false},
     ]);
-    let [filter, setFilter] = useState<FilterValuesType>("all");
 
     function removeTask(id: string) {
         let filteredTasks = tasks.filter(t => t.id != id);
         setTasks(filteredTasks);
     }
-    const addTask = (data: string) => {
-        setTasks([{id: v1(), title: data, isDone: false}, ...tasks])
+
+    function addTask(title: string) {
+        let task = {id: v1(), title: title, isDone: false};
+        let newTasks = [task, ...tasks];
+        setTasks(newTasks);
     }
-    const setCheckbox = (idIn: string) => {
-        let tasksAfter = tasks.map(el => {
-            if (el.id === idIn) {
-                return {id: el.id, title: el.title, isDone: !el.isDone}
-            }
-            return el
-        });
-        setTasks(tasksAfter);
+
+    const setDone = (id: string, checked: boolean) => {
+        setTasks(tasks.map(el => el.id === id ? {...el, isDone: checked} : el))
+    }
+
+    let [filter, setFilter] = useState<FilterValuesType>("all");
+
+    let tasksForTodolist = tasks;
+
+    if (filter === "active") {
+        tasksForTodolist = tasks.filter(t => !t.isDone);
+    }
+    if (filter === "completed") {
+        tasksForTodolist = tasks.filter(t => t.isDone);
     }
 
     function changeFilter(value: FilterValuesType) {
         setFilter(value);
     }
 
-    let tasksForTodolist = tasks;
-    if (filter === "active") {
-        tasksForTodolist = tasks.filter(t => t.isDone === false);
-    }
-    if (filter === "completed") {
-        tasksForTodolist = tasks.filter(t => t.isDone === true);
-    }
 
     return (
         <div className="App">
@@ -51,9 +52,9 @@ function App() {
                       tasks={tasksForTodolist}
                       removeTask={removeTask}
                       changeFilter={changeFilter}
-                      callbackAddTask={addTask}
-                      callbackSetCheckbox={setCheckbox}
-            />
+                      addTask={addTask}
+                      setDone={setDone}
+                      filter={filter}/>
         </div>
     );
 }
