@@ -1,179 +1,55 @@
-import React, {useCallback, useState} from 'react';
-import './App.css';
-import {TaskType, Todolist} from './Todolist';
+import React, {Fragment, useCallback, useEffect, useState} from 'react';
+import {RootStateOrAny, useDispatch, useSelector} from 'react-redux';
+import {selectUsers, selectUsersCount} from 'store/selectors';
+import {createUser, plusUserCount} from 'store/actions';
 import {v1} from 'uuid';
-import {AddItemForm} from './AddItemForm';
-import {AppBar, Button, Container, Grid, IconButton, Paper, Toolbar, Typography} from '@material-ui/core';
-import {Menu} from '@material-ui/icons';
+import {CustomButton, UsersCountValue} from 'components';
+import {UsersList} from 'components/UsersList';
+import {generateRandomName} from 'utils';
+import {SetTimeoutType, UserType} from 'types';
 
-export type FilterValuesType = "all" | "active" | "completed";
-export type TodolistType = {
-    id: string
-    title: string
-    filter: FilterValuesType
-}
+const DELAY = 500;
 
-export type TasksStateType = {
-    [key: string]: Array<TaskType>
-}
+export const App = () => {
 
+  const dispatch = useDispatch();
+  const users = useSelector<RootStateOrAny, UserType[]>(selectUsers);
+  const usersCount = useSelector<RootStateOrAny, number>(selectUsersCount);
 
-function App() {
-    let todolistId1 = v1();
-    let todolistId2 = v1();
+  const [isAddNewUser, setIsAddNewUser] = useState<boolean>(false);
 
-    let [todolists, setTodolists] = useState<Array<TodolistType>>([
-        {id: todolistId1, title: "What to learn", filter: "all"},
-        {id: todolistId2, title: "What to buy", filter: "all"}
-    ])
+  useEffect(() => {
+    let timeoutId: SetTimeoutType = setTimeout((): void => {
+      setIsAddNewUser(false);
+    }, DELAY);
 
-    let [tasks, setTasks] = useState<TasksStateType>({
-        [todolistId1]: [
-            {id: v1(), title: "HTML&CSS", isDone: true},
-            {id: v1(), title: "JS", isDone: true}
-        ],
-        [todolistId2]: [
-            {id: v1(), title: "Milk", isDone: true},
-            {id: v1(), title: "React Book", isDone: true}
-        ]
-    });
+    return () => clearTimeout(timeoutId);
 
-    const removeTask = useCallback((id: string, todolistId: string) => {
-        //достанем нужный массив по todolistId:
-        let todolistTasks = tasks[todolistId];
-        // перезапишем в этом объекте массив для нужного тудулиста отфилтрованным массивом:
-        tasks[todolistId] = todolistTasks.filter(t => t.id != id);
-        // засетаем в стейт копию объекта, чтобы React отреагировал перерисовкой
-        setTasks({...tasks});
-    }, []);
+  }, [users.length]);
 
-    const addTask = useCallback((title: string, todolistId: string) => {
-        let task = {id: v1(), title: title, isDone: false};
-        //достанем нужный массив по todolistId:
-        let todolistTasks = tasks[todolistId];
-        // перезапишем в этом объекте массив для нужного тудулиста копией, добавив в начало новую таску:
-        tasks[todolistId] = [task, ...todolistTasks];
-        // засетаем в стейт копию объекта, чтобы React отреагировал перерисовкой
-        setTasks({...tasks});
-    }, []);
+  useEffect(() => {
+    if (users.length > 0 && isAddNewUser) {
+      dispatch(plusUserCount());
+    }
+  }, [dispatch, users.length, isAddNewUser]);
 
-    const changeStatus = useCallback((id: string, isDone: boolean, todolistId: string) => {
-        //достанем нужный массив по todolistId:
-        let todolistTasks = tasks[todolistId];
-        // найдём нужную таску:
-        let task = todolistTasks.find(t => t.id === id);
-        //изменим таску, если она нашлась
-        if (task) {
-            task.isDone = isDone;
-            // засетаем в стейт копию объекта, чтобы React отреагировал перерисовкой
-            setTasks({...tasks});
-        }
-    }, []);
+  const handleClick = useCallback((): void => {
+    dispatch(createUser({id: v1(), name: generateRandomName()}));
 
-    const changeTaskTitle = useCallback((id: string, newTitle: string, todolistId: string) => {
-        //достанем нужный массив по todolistId:
-        let todolistTasks = tasks[todolistId];
-        // найдём нужную таску:
-        let task = todolistTasks.find(t => t.id === id);
-        //изменим таску, если она нашлась
-        if (task) {
-            task.title = newTitle;
-            // засетаем в стейт копию объекта, чтобы React отреагировал перерисовкой
-            setTasks({...tasks});
-        }
-    }, []);
+    setIsAddNewUser(true);
+  }, [dispatch]);
 
-    const changeFilter = useCallback((value: FilterValuesType, todolistId: string) => {
-        let todolist = todolists.find(tl => tl.id === todolistId);
-        if (todolist) {
-            todolist.filter = value;
-            setTodolists([...todolists])
-        }
-    }, []);
+  return (
+    <Fragment>
+      <UsersCountValue usersCount={usersCount} />
 
-    const removeTodolist = useCallback((id: string) => {
-        // засунем в стейт список тудулистов, id которых не равны тому, который нужно выкинуть
-        setTodolists(todolists.filter(tl => tl.id != id));
-        // удалим таски для этого тудулиста из второго стейта, где мы храним отдельно таски
-        delete tasks[id]; // удаляем св-во из объекта... значением которого являлся массив тасок
-        // засетаем в стейт копию объекта, чтобы React отреагировал перерисовкой
-        setTasks({...tasks});
-    }, []);
+      <CustomButton
+        title="Click Me"
+        isButtonDisabled={isAddNewUser}
+        onClick={handleClick}
+      />
 
-    const changeTodolistTitle = useCallback((id: string, title: string) => {
-        // найдём нужный todolist
-        const todolist = todolists.find(tl => tl.id === id);
-        if (todolist) {
-            // если нашёлся - изменим ему заголовок
-            todolist.title = title;
-            setTodolists([...todolists]);
-        }
-    }, []);
-
-    const addTodolist = useCallback ((title: string) => {
-        let newTodolistId = v1();
-        let newTodolist: TodolistType = {id: newTodolistId, title: title, filter: 'all'};
-        setTodolists([newTodolist, ...todolists]);
-        setTasks({
-            ...tasks,
-            [newTodolistId]: []
-        })
-    }, [])
-
-    return (
-        <div className="App">
-            <AppBar position="static">
-                <Toolbar>
-                    <IconButton edge="start" color="inherit" aria-label="menu">
-                        <Menu/>
-                    </IconButton>
-                    <Typography variant="h6">
-                        News
-                    </Typography>
-                    <Button color="inherit">Login</Button>
-                </Toolbar>
-            </AppBar>
-            <Container fixed>
-                <Grid container style={{padding: "20px"}}>
-                    <AddItemForm addItem={addTodolist}/>
-                </Grid>
-                <Grid container spacing={3}>
-                    {
-                        todolists.map(tl => {
-                            let allTodolistTasks = tasks[tl.id];
-                            let tasksForTodolist = allTodolistTasks;
-
-                            if (tl.filter === "active") {
-                                tasksForTodolist = allTodolistTasks.filter(t => t.isDone === false);
-                            }
-                            if (tl.filter === "completed") {
-                                tasksForTodolist = allTodolistTasks.filter(t => t.isDone === true);
-                            }
-
-                            return <Grid item>
-                                <Paper style={{padding: "10px"}}>
-                                    <Todolist
-                                        key={tl.id}
-                                        id={tl.id}
-                                        title={tl.title}
-                                        tasks={tasksForTodolist}
-                                        removeTask={removeTask}
-                                        changeFilter={changeFilter}
-                                        addTask={addTask}
-                                        changeTaskStatus={changeStatus}
-                                        filter={tl.filter}
-                                        removeTodolist={removeTodolist}
-                                        changeTaskTitle={changeTaskTitle}
-                                        changeTodolistTitle={changeTodolistTitle}
-                                    />
-                                </Paper>
-                            </Grid>
-                        })
-                    }
-                </Grid>
-            </Container>
-        </div>
-    );
-}
-
-export default App;
+      <UsersList users={users} />
+    </Fragment>
+  );
+};
