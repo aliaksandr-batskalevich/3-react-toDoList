@@ -20,10 +20,11 @@ import Paper from '@mui/material/Paper';
 
 export const TodolistsList: React.FC = () => {
 
-    const todolists = useSelector<AppRootStateType, Array<TodolistDomainType>>(state => state.todolists)
-    const tasks = useSelector<AppRootStateType, TasksStateType>(state => state.tasks)
+    const todolists = useSelector<AppRootStateType, Array<TodolistDomainType>>(state => state.todolists);
+    const tasks = useSelector<AppRootStateType, TasksStateType>(state => state.tasks);
+    const isAddTodolistLoading = useSelector<AppRootStateType, boolean>(state => state.app.isAddTodolistLoading);
 
-    const dispatch = useDispatch()
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const thunk = fetchTodolistsTC()
@@ -73,7 +74,7 @@ export const TodolistsList: React.FC = () => {
 
     return <>
         <Grid container style={{padding: '20px'}}>
-            <AddItemForm addItem={addTodolist}/>
+            <AddItemForm addItem={addTodolist} isLoading={isAddTodolistLoading}/>
         </Grid>
         <Grid container spacing={3}>
             {
@@ -84,7 +85,7 @@ export const TodolistsList: React.FC = () => {
                         <Paper style={{padding: '10px'}}>
                             <Todolist
                                 id={tl.id}
-                                isLoading={tl.isLoading}
+                                isLoadingTodolist={tl.isLoading}
                                 title={tl.title}
                                 tasks={allTodolistTasks}
                                 removeTask={removeTask}
@@ -92,6 +93,7 @@ export const TodolistsList: React.FC = () => {
                                 addTask={addTask}
                                 changeTaskStatus={changeStatus}
                                 filter={tl.filter}
+                                isLoadingAdd={tl.isLoadingAdd}
                                 removeTodolist={removeTodolist}
                                 changeTaskTitle={changeTaskTitle}
                                 changeTodolistTitle={changeTodolistTitle}

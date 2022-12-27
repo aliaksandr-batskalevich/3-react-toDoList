@@ -5,6 +5,7 @@ import TextField from '@mui/material/TextField';
 type EditableSpanPropsType = {
     value: string
     onChange: (newValue: string) => void
+    isLoading?: boolean
 }
 
 export const EditableSpan = React.memo(function (props: EditableSpanPropsType) {
@@ -13,8 +14,12 @@ export const EditableSpan = React.memo(function (props: EditableSpanPropsType) {
     let [title, setTitle] = useState(props.value);
 
     const activateEditMode = () => {
-        setEditMode(true);
-        setTitle(props.value);
+        if (props.isLoading) {
+
+        } else {
+            setEditMode(true);
+            setTitle(props.value);
+        }
     }
     const activateViewMode = () => {
         setEditMode(false);
