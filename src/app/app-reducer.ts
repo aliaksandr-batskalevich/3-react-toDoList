@@ -1,60 +1,33 @@
-export type AppActionsType = ReturnType<typeof setMessage>
-    | ReturnType<typeof setNullMessage>
-    | ReturnType<typeof setAppStatus>
-    | ReturnType<typeof setAddTodolistLoading>
-
-export type AppStatusType = 'idle' | 'loading' | 'succeeded' | 'failed';
-
-export type TextType = 'error' | 'info';
-type MessageType = null | {
-    textType: TextType
-    text: string
+const initialState: InitialStateType = {
+    status: 'idle',
+    error: null
 }
 
-export type AppStateType = typeof initialState;
-
-
-const initialState = {
-    status: 'idle' as AppStatusType,
-    message: null as MessageType,
-    isAddTodolistLoading: false,
-}
-
-export const appReducer = (state: AppStateType = initialState, action: AppActionsType) => {
+export const appReducer = (state: InitialStateType = initialState, action: ActionsType): InitialStateType => {
     switch (action.type) {
-        case "SET_APP_STATUS":
-            return {...state, ...action.payload};
-        case "SET_MESSAGE":
-            return {...state, message: {...action.payload}};
-        case "SET_NULL_MESSAGE":
-            return {...state, message: null};
-        case "SET_ADD_TODOLIST_LOADING":
-            return {...state, ...action.payload};
+        case 'APP/SET-STATUS':
+            return {...state, status: action.status}
+        case 'APP/SET-ERROR':
+            return {...state, error: action.error}
         default:
-            return state;
+            return {...state}
     }
 }
 
-export const setAppStatus = (status: AppStatusType) => {
-    return {
-        type: 'SET_APP_STATUS',
-        payload: {status},
-    } as const;
-};
-export const setMessage = (textType: TextType, text: string) => {
-    return {
-        type: 'SET_MESSAGE',
-        payload: {textType, text},
-    } as const;
-};
-export const setNullMessage = () => {
-    return {
-        type: 'SET_NULL_MESSAGE',
-    } as const;
-};
-export const setAddTodolistLoading = (isAddTodolistLoading: boolean) => {
-    return {
-        type: 'SET_ADD_TODOLIST_LOADING',
-        payload: {isAddTodolistLoading}
-    } as const;
-};
+export type RequestStatusType = 'idle' | 'loading' | 'succeeded' | 'failed'
+export type InitialStateType = {
+    // происходит ли сейчас взаимодействие с сервером
+    status: RequestStatusType
+    // если ошибка какая-то глобальная произойдёт - мы запишем текст ошибки сюда
+    error: string | null
+}
+
+export const setAppErrorAC = (error: string | null) => ({type: 'APP/SET-ERROR', error} as const)
+export const setAppStatusAC = (status: RequestStatusType) => ({type: 'APP/SET-STATUS', status} as const)
+
+export type SetAppErrorActionType = ReturnType<typeof setAppErrorAC>
+export type SetAppStatusActionType = ReturnType<typeof setAppStatusAC>
+
+type ActionsType =
+    | SetAppErrorActionType
+    | SetAppStatusActionType

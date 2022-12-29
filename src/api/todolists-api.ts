@@ -1,10 +1,10 @@
-import axios, {AxiosResponse} from 'axios'
+import axios, { AxiosResponse } from 'axios'
 
 const instance = axios.create({
     baseURL: 'https://social-network.samuraijs.com/api/1.1/',
     withCredentials: true,
     headers: {
-        'API-KEY': 'f73346cf-43a9-46ef-bb80-ad0f8ec9758d'
+        'API-KEY': '8f2534e2-22a4-4052-894e-a66c04807482'
     }
 })
 
@@ -66,10 +66,7 @@ export enum TaskPriorities {
     Later = 4
 }
 
-export type TaskType = TaskResponseType & {
-    isLoadingTask: boolean
-}
-export type TaskResponseType = {
+export type TaskType = {
     description: string
     title: string
     status: TaskStatuses
@@ -92,5 +89,5 @@ export type UpdateTaskModelType = {
 type GetTasksResponse = {
     error: string | null
     totalCount: number
-    items: TaskResponseType[]
+    items: TaskType[]
 }
